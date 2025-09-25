@@ -75,12 +75,14 @@ public class SftpStack extends Stack {
                 .allowAllOutbound(true)
                 .build();
 
-        // Allow SFTP traffic (port 22) from anywhere
-        this.sftpSecurityGroup.addIngressRule(
-                software.amazon.awscdk.services.ec2.Peer.anyIpv4(),
-                Port.tcp(22),
-                "Allow SFTP access"
-        );
+        // Allow SFTP traffic (port 22) from specific IP addresses only
+        for (String allowedIP : sftpProps.getAllowedIPs()) {
+            this.sftpSecurityGroup.addIngressRule(
+                    software.amazon.awscdk.services.ec2.Peer.ipv4(allowedIP),
+                    Port.tcp(22),
+                    "Allow SFTP access from " + allowedIP
+            );
+        }
 
         // Create VPC endpoints for S3 if enabled
         if (sftpProps.isEnableVpcEndpoint()) {

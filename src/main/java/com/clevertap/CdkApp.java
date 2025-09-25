@@ -13,38 +13,24 @@ public class CdkApp {
         // Create SFTP stack props with configuration
         SftpStackProps sftpProps = SftpStackProps.builder()
                 .sftpUserName("sftpuser")
-                .sshPublicKey("ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDT95yFKUz5bqZYdK7Eb4S3yHHEekLUh55snZAFK+cW89c4pngV1ow69yBmYKxUrz4EN8+Aw7fYxhrWIus/XyQnx5tLTrUDmUeqZemT0hO4wnPImP8ArDUr9WYKRxKaNH0d1ie+asETnFzPt+SFB9YxhlMzTXlzEIJgd9l/iD7kCTAO1/jKT6ohNM9VaQubrDXrO6jQWYPreY+kdpjuT8XrkrDy6w1zJZxev2ulvexZV999b9XE3RLHGjiW4FPf47ZMAljz1Q06fwfw0rf8CvK3hiyvAbvOCOqnCzF6V66/d2CDj9Q3lCI9jIWz3yTWFGJpzyhEC7wtyAXxD2ySFynHgvKCB2WrGbfvxdQkYQu6FnG0ZKN6Uw3ur9GYOvnAk3VCNvxMDHrnS3AeH4v2EcyUI0GSY+zhhTuKX8ttcts7zuAdQcoJkmzw3WrDkhNkbgG6GzhwInm7T2vbYyD2+6ogmVqHx+m4EKz9FprL0ZvcwB1TsJyLpZCIobl+em7oYSlejZpzUiAXM+3x/Te0aphrgBklXjc1OWq3pqhnZ/IZ6tU0JA6uac2y6BcIW5awGHRP2z/aw0Q6bSegxhcgjf71iTfM64Cz1HT7ucAc896Hx0ed1vrscOjPmkoKCMJEC+a/QyOUZIGARK923GUgCzXA+b6k0m1qC7yiav1HpSnBHw== yashdeep@Yashdeep-MacBook-Pro") // Replace with your actual SSH public key
-                .s3BucketName("cdk-sftp-storage-bucket-unique") // Unique bucket name
+                .sshPublicKey("ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDAu2Z0kHypXXi26lJLxCNePInmixSgBf8GciyGvzf+lT9jjk+wtIPmnFnicZANFdSnZ2kS7YJ4uw3Lbizhk9d+foUYe1hF3YPOntjOqcR+RxcvilR/GcQ9YENHo0tWIkAJfkfiEzB0A+kXGcsnTOHU0qTUdVlP7JV8Zh4EYQDYfuOcEAsseU7+ABRpMm21QiUvqs/xL95xsNQ1SDUn6zWqmg8snQxgmoP4eu9JCX8EahbhnUZV6jft3lvEIvDq5n01enMEagNzSmKZuzI47Y0s2Q/eeCWrAypsiC5DbBreWh7OgMdOwiSJ8cPtKB76KDsC9TBVDLTzaUDtOxHO4Ef94Wq8viE4FVithboaK5l5MU93sJcFMhwd2J12Dxs8cPoNOUFqiMrSJBSLl3PpPQ9WJLox247qau36DEtHYZIVpXCV99WutMa6Y7zq3XbEuRHiT9JGcqcYOnLdMWI+vJkzSycpSkA4qbIkfwdjZZmVe4Q6sDB6YgrD01RJvifL7s0= yashdeep@Yashdeep-MacBook-Pro") 
+                .s3BucketName("cdk-sftp-storage-bucket-unique") 
                 .vpcCidr("10.0.0.0/16")
                 .availabilityZones(new String[]{"us-east-1a", "us-east-1b"})
                 .enableVpcEndpoint(true)
                 .environment("dev")
+                .allowedIPs(new String[]{
+                    "223.181.61.44/32",  // Current public IP
+                    "203.0.113.0/24",    
+                    "198.51.100.0/24",   
+                    "192.0.2.0/24",      
+                    "10.0.0.0/8",        
+                    "172.16.0.0/12",     
+                    "192.168.0.0/16"     
+                })
                 .build();
 
         new SftpStack(app, "CdkSftpStack", StackProps.builder()
-                // If you don't specify 'env', this stack will be environment-agnostic.
-                // Account/Region-dependent features and context lookups will not work,
-                // but a single synthesized template can be deployed anywhere.
-
-                // Uncomment the next block to specialize this stack for the AWS Account
-                // and Region that are implied by the current CLI configuration.
-                /*
-                .env(Environment.builder()
-                        .account(System.getenv("CDK_DEFAULT_ACCOUNT"))
-                        .region(System.getenv("CDK_DEFAULT_REGION"))
-                        .build())
-                */
-
-                // Uncomment the next block if you know exactly what Account and Region you
-                // want to deploy the stack to.
-                /*
-                .env(Environment.builder()
-                        .account("123456789012")
-                        .region("us-east-1")
-                        .build())
-                */
-
-                // For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html
                 .build(), sftpProps);
 
         app.synth();
