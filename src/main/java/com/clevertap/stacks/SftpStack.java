@@ -27,6 +27,8 @@ import software.amazon.awscdk.CfnOutput;
 import software.amazon.awscdk.RemovalPolicy;
 
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SftpStack extends Stack {
     private final Bucket sftpBucket;
@@ -155,7 +157,16 @@ public class SftpStack extends Stack {
                 ))
                 .build());
 
-        // Create AWS Transfer Family SFTP Server in VPC
+        // Create Elastic IPs for internet-facing VPC endpoint
+        List<software.amazon.awscdk.services.ec2.CfnEIP> elasticIPs = new ArrayList<>();
+        for (int i = 0; i < this.vpc.getPublicSubnets().size(); i++) {
+            software.amazon.awscdk.services.ec2.CfnEIP elasticIP = software.amazon.awscdk.services.ec2.CfnEIP.Builder.create(this, "ElasticIP" + i)
+                    .domain("vpc")
+                    .build();
+            elasticIPs.add(elasticIP);
+        }
+
+        // Create AWS Transfer Family SFTP Server in VPC with internet-facing access
         this.sftpServer = CfnServer.Builder.create(this, "SftpServer")
                 .endpointType("VPC")
                 .identityProviderType("SERVICE_MANAGED")
@@ -164,10 +175,13 @@ public class SftpStack extends Stack {
                 .loggingRole(this.transferRole.getRoleArn())
                 .endpointDetails(EndpointDetailsProperty.builder()
                     .vpcId(this.vpc.getVpcId())
-                    .subnetIds(this.vpc.getPrivateSubnets().stream()
+                    .subnetIds(this.vpc.getPublicSubnets().stream()
                             .map(subnet -> subnet.getSubnetId())
                             .collect(java.util.stream.Collectors.toList()))
                     .securityGroupIds(Arrays.asList(this.sftpSecurityGroup.getSecurityGroupId()))
+                    .addressAllocationIds(elasticIPs.stream()
+                            .map(eip -> eip.getAttrAllocationId())
+                            .collect(java.util.stream.Collectors.toList()))
                     .build())
                 .build();
 
